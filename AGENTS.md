@@ -10,7 +10,7 @@
 ## Build, Test, and Development Commands
 - `python3.13 -m venv .venv && source .venv/bin/activate` prepares the supported runtime.
 - `python -m pip install -r requirements.txt` installs Agency Swarm plus test dependencies.
-- `sudo python agency.py` launches the interactive CLI demo (sudo is required on macOS for filesystem access).
+- Run `python agency.py` for the interactive CLI demo; keep it non-sudo so shell tools stay confined to the project tree.
 - `python run_tests.py` ensures dependencies exist and executes the full pytest suite with repository defaults.
 - `pytest tests/test_tool_integration.py -k handoff` targets the planner→developer handoff flow when iterating.
 - `pre-commit run --all-files` enforces Ruff formatting and import sorting before you push.
@@ -31,5 +31,6 @@
 - Attach relevant CLI logs or screenshots for UX changes so reviewers can validate behaviour.
 
 ## Security & Configuration Tips
+- Never run the agency as root; Bash and Write can modify arbitrary paths if elevated.
 - Store provider keys and model overrides in `.env`; `dotenv` autoloads them in `agency.py`.
 - Document new configuration flags in `README.md` and update both agent factories when you add models or reasoning modes.

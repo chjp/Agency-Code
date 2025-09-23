@@ -38,6 +38,16 @@ Fully open sourced version of Claude Code built with [Agency Swarm](https://agen
 - Don't forget to run the command with sudo if you're on macOS.
 - The agent won't be able to edit files outside of your current directory.
 
+## 🔐 Model & API configuration
+
+- Supply provider keys (e.g. OPENAI_API_KEY, ANTHROPIC_API_KEY) via a local `.env`; `dotenv` loads them automatically.
+
+### Using OpenRouter
+
+1. Add `OPENROUTER_API_KEY=your_key` to `.env` (optional: `LITELLM_API_BASE=https://openrouter.ai/api/v1`).
+2. Set the `model` in `agency.py` (or when creating an agent) to an OpenRouter slug, for example `openrouter/anthropic/claude-3-5-sonnet`.
+3. Restart the demo; LiteLLM will route traffic through OpenRouter using that key.
+
 ## 🔧 Adding Subagents
 
 - To add a subagent, simply prompt _Cursor_ or _Claude Code_ itself. For example:
