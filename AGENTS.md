@@ -5,6 +5,7 @@
 - `agency_code_agent/` hosts the primary coding agent, prompt templates, and `tools/`; reuse helpers under `agents/` and `tools/`.
 - `planner_agent/` mirrors the coder wiring for planning flows—keep configuration toggles aligned when moving features.
 - `shared/` exposes adapters consumed by multiple agents, while `subagent_example/` illustrates how to extend the swarm.
+- `agentrunlog/` captures per-session telemetry (`timestamp.log` + `session-*.jsonl`) whenever you run `python agency.py`.
 - `tests/` provides pytest coverage across tools, planner logic, and integration paths; mirror its layout for new scenarios.
 
 ## Build, Test, and Development Commands

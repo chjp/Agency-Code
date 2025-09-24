@@ -12,7 +12,12 @@ from shared.agent_utils import (
     create_model_settings,
     get_model_instance,
 )
-from shared.system_hooks import create_system_reminder_hook
+from shared.run_logging import SessionRunLogger
+from shared.system_hooks import (
+    SessionLoggingHook,
+    combine_hooks,
+    create_system_reminder_hook,
+)
 from tools import (
     LS,
     Bash,
@@ -36,7 +41,9 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 
 
 def create_agency_code_agent(
-    model: str = "gpt-5-mini", reasoning_effort: str = "medium"
+    model: str = "gpt-5-mini",
+    reasoning_effort: str = "medium",
+    session_logger: SessionRunLogger | None = None,
 ) -> Agent:
     """Factory that returns a fresh AgencyCodeAgent instance.
     Use this in tests to avoid reusing a singleton across multiple agencies.
@@ -47,6 +54,7 @@ def create_agency_code_agent(
     instructions = render_instructions(instructions_file, model)
 
     reminder_hook = create_system_reminder_hook()
+    logging_hook = SessionLoggingHook(session_logger) if session_logger else None
 
     return Agent(
         name="AgencyCodeAgent",
@@ -54,7 +62,7 @@ def create_agency_code_agent(
         instructions=instructions,
         tools_folder=os.path.join(current_dir, "tools"),
         model=get_model_instance(model),
-        hooks=reminder_hook,
+        hooks=combine_hooks(reminder_hook, logging_hook),
         tools=[
             Bash,
             Glob,

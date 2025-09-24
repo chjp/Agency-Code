@@ -2,6 +2,114 @@ from typing import Optional
 
 from agents import AgentHooks, RunContextWrapper
 
+from shared.run_logging import SessionRunLogger
+
+
+class CompositeHooks(AgentHooks):
+    """Forward hook events to multiple AgentHook instances."""
+
+    def __init__(self, *hooks: AgentHooks) -> None:
+        self._hooks = [hook for hook in hooks if hook is not None]
+
+    async def on_start(self, context: RunContextWrapper, agent) -> None:
+        for hook in self._hooks:
+            if hasattr(hook, "on_start"):
+                await hook.on_start(context, agent)
+
+    async def on_end(self, context: RunContextWrapper, agent, output) -> None:
+        for hook in self._hooks:
+            if hasattr(hook, "on_end"):
+                await hook.on_end(context, agent, output)
+
+    async def on_handoff(self, context: RunContextWrapper, agent, source) -> None:
+        for hook in self._hooks:
+            if hasattr(hook, "on_handoff"):
+                await hook.on_handoff(context, agent, source)
+
+    async def on_tool_start(self, context: RunContextWrapper, agent, tool) -> None:
+        for hook in self._hooks:
+            if hasattr(hook, "on_tool_start"):
+                await hook.on_tool_start(context, agent, tool)
+
+    async def on_tool_end(
+        self, context: RunContextWrapper, agent, tool, result: str
+    ) -> None:
+        for hook in self._hooks:
+            if hasattr(hook, "on_tool_end"):
+                await hook.on_tool_end(context, agent, tool, result)
+
+    async def on_llm_start(
+        self,
+        context: RunContextWrapper,
+        agent,
+        system_prompt,
+        input_items,
+    ) -> None:
+        for hook in self._hooks:
+            if hasattr(hook, "on_llm_start"):
+                await hook.on_llm_start(context, agent, system_prompt, input_items)
+
+    async def on_llm_end(self, context: RunContextWrapper, agent, response) -> None:
+        for hook in self._hooks:
+            if hasattr(hook, "on_llm_end"):
+                await hook.on_llm_end(context, agent, response)
+
+
+def combine_hooks(*hooks: AgentHooks | None) -> AgentHooks | None:
+    """Return a single hook that dispatches to all provided hooks."""
+
+    active = [hook for hook in hooks if hook is not None]
+    if not active:
+        return None
+    if len(active) == 1:
+        return active[0]
+    return CompositeHooks(*active)
+
+
+class SessionLoggingHook(AgentHooks):
+    """Hook that records detailed agent activity to the session logger."""
+
+    def __init__(self, logger: SessionRunLogger) -> None:
+        self._logger = logger
+
+    async def on_start(self, context: RunContextWrapper, agent) -> None:
+        self._logger.log("agent_start", agent.name)
+
+    async def on_end(self, context: RunContextWrapper, agent, output) -> None:
+        self._logger.log("agent_end", agent.name, output=output)
+
+    async def on_handoff(self, context: RunContextWrapper, agent, source) -> None:
+        source_name = getattr(source, "name", str(source)) if source else None
+        self._logger.log("agent_handoff", agent.name, source=source_name)
+
+    async def on_tool_start(self, context: RunContextWrapper, agent, tool) -> None:
+        tool_name = getattr(tool, "name", tool.__class__.__name__)
+        self._logger.log("tool_start", agent.name, tool=tool_name)
+
+    async def on_tool_end(
+        self, context: RunContextWrapper, agent, tool, result: str
+    ) -> None:
+        tool_name = getattr(tool, "name", tool.__class__.__name__)
+        self._logger.log("tool_end", agent.name, tool=tool_name, result=result)
+
+    async def on_llm_start(
+        self,
+        context: RunContextWrapper,
+        agent,
+        system_prompt,
+        input_items,
+    ) -> None:
+        self._logger.log(
+            "llm_start",
+            agent.name,
+            system_prompt=system_prompt,
+            messages=input_items,
+        )
+
+    async def on_llm_end(self, context: RunContextWrapper, agent, response) -> None:
+        response_payload = response
+        self._logger.log("llm_end", agent.name, response=response_payload)
+
 
 class SystemReminderHook(AgentHooks):
     """

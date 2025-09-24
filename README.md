@@ -38,6 +38,13 @@ Fully open sourced version of Claude Code built with [Agency Swarm](https://agen
 - Don't forget to run the command with sudo if you're on macOS.
 - The agent won't be able to edit files outside of your current directory.
 
+## 📈 Session logging
+
+- Every terminal run of `agency.py` writes to `agentrunlog/timestamp.log`, capturing the start time and the JSONL file generated for that session.
+- Detailed transcripts (LLM prompts/responses, planner↔coder handoffs, tool invocations and outputs) stream into `agentrunlog/session-YYYYMMDDTHHMMSS.jsonl`.
+- Each JSONL line is a structured event with `timestamp`, `event`, `agent`, and a `data` payload—handy for debugging or replaying how the agents worked through a task.
+- Logs accumulate per session; delete files in `agentrunlog/` if you need a clean slate before the next run.
+
 ## 🔐 Model & API configuration
 
 - Supply provider keys (e.g. OPENAI_API_KEY, ANTHROPIC_API_KEY) via a local `.env`; `dotenv` loads them automatically.
