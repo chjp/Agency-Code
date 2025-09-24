@@ -28,7 +28,11 @@ litellm.modify_params = True
 
 # switch between models here
 # model = "anthropic/claude-sonnet-4-20250514"
-model = "gpt-5"
+model = "openrouter/openai/gpt-oss-120b"
+
+if model.startswith("openrouter/") and not os.getenv("LITELLM_API_BASE"):
+    # Default to OpenRouter base when using an OpenRouter slug.
+    os.environ.setdefault("LITELLM_API_BASE", "https://openrouter.ai/api/v1")
 
 # create agents
 planner = create_planner_agent(
