@@ -66,6 +66,17 @@ def build_agency(model_name: str, session_logger: SessionRunLogger | None = None
 
 agency = build_agency(model)
 
+def model_supports_reasoning_ui(model_name: str) -> bool:
+    lowered = model_name.lower()
+    if lowered.startswith("openrouter/"):
+        return False
+    if lowered.startswith("gpt-5"):
+        return True
+    if lowered.startswith("anthropic/"):
+        return False
+    return True
+
+
 if __name__ == "__main__":
     os.makedirs(log_dir, exist_ok=True)
     session_logger = create_session_logger(log_dir)
@@ -78,7 +89,8 @@ if __name__ == "__main__":
     agency = build_agency(model, session_logger=session_logger)
     session_logger.log("session_start", agent="Agency", model=model)
     try:
-        agency.terminal_demo(show_reasoning=False if model.startswith("anthropic") else True)
+        show_reasoning = model_supports_reasoning_ui(model)
+        agency.terminal_demo(show_reasoning=show_reasoning)
     finally:
         session_logger.log("session_end", agent="Agency")
     # agency.visualize()
