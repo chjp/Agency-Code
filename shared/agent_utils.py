@@ -10,9 +10,11 @@ from openai.types.shared.reasoning import Reasoning
 
 def detect_model_type(model: str) -> tuple[bool, bool, bool]:
     """Detect model type and return (is_openai, is_claude, is_grok)."""
-    is_openai = "gpt" in model
-    is_claude = "claude" in model
-    is_grok = "grok" in model
+    lowered = model.lower()
+    is_openrouter = lowered.startswith("openrouter/")
+    is_openai = "gpt" in lowered and not is_openrouter
+    is_claude = "claude" in lowered
+    is_grok = "grok" in lowered
     return is_openai, is_claude, is_grok
 
 

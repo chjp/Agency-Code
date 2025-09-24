@@ -32,7 +32,7 @@ Fully open sourced version of Claude Code built with [Agency Swarm](https://agen
 2. Try the agency (terminal demo):
 
    ```
-   sudo python agency.py
+   python agency.py
    ```
 
 - Don't forget to run the command with sudo if you're on macOS.
