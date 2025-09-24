@@ -1,0 +1,3 @@
+2025-09-23T22:56:05	Model selection note: Per OpenRouter's docs, `openrouter/openai/gpt-oss-120b` is a text-only model that lacks function-calling/tool support, so AgencyCode stalls after streaming reasoning.
+Context: Observed during a terminal session where the agent never emitted `llm_end` or any `tool_*` events in `agentrunlog/session-20250923T223736.jsonl`, leaving the request unmet.
+Commentary: Use a tool-capable slug (e.g. `openrouter/openai/gpt-4o` or `openrouter/anthropic/claude-3.5-sonnet`) for interactive runs; otherwise enable `AGENCY_SHOW_REASONING` only for inspection and expect to intervene manually.
