@@ -1,0 +1,24 @@
+Python 3.13.0 setup via pyenv
+Recorded: 2025-09-23T21:54:22
+
+What is pyenv?
+pyenv is a lightweight version manager that lets you install multiple Python builds side-by-side and switch between them per-shell, per-project, or globally via shims that sit earlier on PATH.
+
+Steps performed:
+- Installed pyenv with Homebrew: `brew install pyenv`
+- Built Python 3.13.0: `pyenv install 3.13.0`
+- Pinned the project interpreter by writing `3.13.0` into `.python-version`
+- Updated `~/.zprofile` to export `PYENV_ROOT`, prepend `~/.pyenv/bin` to PATH, and run `eval "$(pyenv init --path)"`
+- Updated `~/.zshrc` to run `eval "$(pyenv init -)"`
+- Restarted the shell so `python`/`python3` resolve to the pyenv-managed 3.13.0 interpreter
+
+Command explanations:
+- `brew install pyenv` downloads the pyenv tool and its shims so you can manage Python builds from your shell.
+- `pyenv install 3.13.0` compiles and installs the specified Python version under `~/.pyenv/versions/3.13.0`.
+- `.python-version` stores the desired local interpreter; when pyenv sees `3.13.0` in that file it moves the corresponding shim to the front of PATH for this directory.
+- `eval "$(pyenv init --path)"` adjusts PATH for login shells so pyenv’s shims are visible before system Python.
+- `eval "$(pyenv init -)"` configures interactive shells to route `python`, `pip`, etc., through the shims and honor local/global overrides.
+
+Impact on other projects:
+- Because `~/.zprofile` and `~/.zshrc` now initialize pyenv for every shell, `python` and `pip` commands will resolve to pyenv shims globally. Projects without a `.python-version` file will use whichever version is set by `pyenv global` (initially the system Python until you change it).
+- To work on a different project that needs another Python version, run `pyenv local <version>` inside that project or `pyenv global <version>` to switch the default. The system Python remains available as `pyenv global system` if required.
