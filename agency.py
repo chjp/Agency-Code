@@ -30,7 +30,9 @@ litellm.modify_params = True
 
 # switch between models here
 # model = "anthropic/claude-sonnet-4-20250514"
-model = "openrouter/openai/gpt-oss-120b"
+# model = "openrouter/openai/gpt-oss-120b"
+# model = "anthropic/claude-sonnet-4" # didn't work with
+model = "openrouter/openai/gpt-5-mini" # works
 
 if model.startswith("openrouter/") and not os.getenv("LITELLM_API_BASE"):
     # Default to OpenRouter base when using an OpenRouter slug.

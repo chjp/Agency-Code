@@ -1,7 +1,86 @@
 # 👨‍💻 Agency Code
 
 Fully open sourced version of Claude Code built with [Agency Swarm](https://agency-swarm.ai/welcome/overview) framework.
+## chjp new idea
+That’s a solid approach. If you want a Claude-Code-style agent but much smaller, here are two high-signal bases to fork and shrink—plus a concrete “reduction plan” to get to a minimal Python repo.
 
+Good bases to slim down
+	•	Anthropic’s Claude Code — official agentic coding tool; shows planning, tool use, and repo-aware workflows. Heavier, but patterns map well to a coding agent.  ￼
+	•	SST OpenCode — popular terminal-first coding agent with a clean split between UI and core; provider-agnostic. Start here if you like TUI patterns and want to study a mature loop, then port the core to Python.  ￼
+
+(Other options are more IDE-extension oriented, e.g. kodu-ai/claude-coder, or researchy (OpenBMB RepoAgent/XAgent), but they’re less ideal for a tiny repo starting point.)  ￼
+
+⸻
+
+“Shrink-to-core” plan (works for Claude Code or OpenCode)
+
+Goal: end with a ~400–800-line Python agent repo implementing:
+plan → choose tool → act → observe → reflect → stop/continue, plus 4 tools (read/write file, ripgrep/code search, run tests, run shell).
+
+Step 0 — Fork & inventory
+	•	Fork the repo and identify only the modules that:
+	1.	build prompts/plans, 2) decide actions/tool calls, 3) execute tools, 4) stream observations back.
+	•	Ignore: TUI/VSCode UI, analytics/telemetry, auth providers you won’t use, multi-session orchestration, SDK clients.
+
+Step 1 — Freeze the model adapter
+	•	Keep just one model adapter (Claude or OpenAI). Hard-code to start; add env vars later.
+	•	Extract the fewest prompt templates needed (task brief, repo context, tool schema, reflection).
+
+Step 2 — Define tools as plain JSON
+
+Implement 4 tools in Python with strict I/O:
+	•	read_file(path), write_file(path, content, create_ok)
+	•	search_code(query, globs, max_hits) (wrap ripgrep/ast-grep)
+	•	run_tests(cmd) (captures exit code/stdout/stderr)
+	•	shell(cmd) (with allowlist + timeout)
+
+Step 3 — Build the loop
+
+State machine with guardrails:
+
+PLAN → ACT(tool_name, args) → OBSERVE(result) → REFLECT(decide next step or DONE)
+
+	•	Enforce max tool calls per run (e.g., 12).
+	•	Auto-retry once on tool error with the error text fed back into the prompt.
+	•	Stop conditions: tests pass, or user-defined success string, or max steps.
+
+Step 4 — Minimal repo structure
+
+mini-code-agent/
+  agent.py        # loop + planner + reflection (single file is fine)
+  tools.py        # the 4 tools above (or inline in agent.py)
+  prompts.py      # prompt snippets + system instructions
+  sandbox/        # working dir (gitignored)
+  tasks/          # sample tasks + tests (toy project)
+  README.md       # usage + safety notes
+
+Step 5 — Safety & DX
+	•	Run all actions in sandbox/. Denylist paths like ~, /etc, .ssh, .git/.
+	•	Timeouts on all shell commands; truncate long outputs before sending back to the model.
+	•	Add a --dry-run flag that prints planned tool calls without executing.
+	•	Unit tests: fake model that returns canned plans → verify the loop and tool serialization.
+
+Step 6 — Nice-to-have (later)
+	•	Repo map (file tree + LOC + top identifiers) given to the model as context.
+	•	Diff review step: after write, show unified diff to model for self-check before commit.
+	•	Optional git tool (stage/commit/branch) behind a feature flag.
+
+⸻
+
+Why these bases?
+	•	Claude Code: shows an “agentic coding” UX (terminal/IDE, repo context, git workflows) you can emulate before paring down. It’s actively maintained by Anthropic and used widely, with ongoing development around the planning loop.  ￼
+	•	OpenCode: large but cleanly structured and provider-agnostic; the separation makes it easier to identify the action loop and tools you want to replicate in a tiny Python port.  ￼
+
+⸻
+
+If you want, I’ll do a pass for you
+
+Say the word and I’ll:
+	1.	pick one (Claude Code or OpenCode),
+	2.	list the exact files you can ignore vs. keep for the core loop, and
+	3.	output a Python starter repo plan mapping each kept concept to a minimal function.
+
+(We can tailor for your environment—e.g., run with Claude via API/Bedrock vs. OpenAI.)
 ## 🔥 Key features
 
 - **Developer Agent**: The primary developer agent with the same set of tools as Claude Code.

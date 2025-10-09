@@ -38,14 +38,16 @@ def _make_json_safe(value: Any) -> Any:
 class SessionRunLogger:
     """Thread-safe logger that writes structured session events to JSONL."""
 
-    def __init__(self, log_path: str) -> None:
+    def __init__(self, log_path: str, session_id: str) -> None:
         self.log_path = log_path
+        self.session_id = session_id
         self._lock = threading.Lock()
 
     def log(self, event: str, agent: str | None = None, **payload: Any) -> None:
         """Append a structured log entry to the session file."""
         record: dict[str, Any] = {
             "timestamp": datetime.now().isoformat(),
+            "session_id": self.session_id,
             "event": event,
         }
         if agent is not None:
@@ -63,9 +65,16 @@ class SessionRunLogger:
 
 
 def create_session_logger(log_dir: str) -> SessionRunLogger:
-    """Create a session logger using a timestamped file under log_dir."""
+    """Create a session logger using a daily log file under log_dir."""
     os.makedirs(log_dir, exist_ok=True)
-    run_id = datetime.now().strftime("%Y%m%dT%H%M%S")
-    log_path = os.path.join(log_dir, f"session-{run_id}.jsonl")
-    return SessionRunLogger(log_path)
+    now = datetime.now()
+
+    # Daily log file: agentrunlog/20251008.jsonl
+    daily_date = now.strftime("%Y%m%d")
+    log_path = os.path.join(log_dir, f"{daily_date}.jsonl")
+
+    # Session ID with time: 20251008T214530
+    session_id = now.strftime("%Y%m%dT%H%M%S")
+
+    return SessionRunLogger(log_path, session_id)
 
